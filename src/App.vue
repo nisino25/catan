@@ -969,7 +969,7 @@ export default {
 	height: 30px;
 
 	margin-top: -10px;
-}
+} 
 
 .chunk span.red { background-color: red; }
 .chunk span.blue { background-color: blue; }
