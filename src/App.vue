@@ -23,23 +23,23 @@
     </div>
 
     <!-- <p v-if="HasThrown"><br>1st: {{diceOne}}, 2nd: {{diceTwo}} Sum: {{diceSum}}</p> -->
-    <p v-if="!HasThrown && OrderOder > 8" ><br>Ready to roll dice</p>
+    <p v-if="!HasThrown && OrderOder > 8 && !gameOver" ><br>Ready to roll dice</p>
 
 
     <div v-if="HasThrown && OrderOder > 8">
-      <p v-if="mes !== ''" class="report"> {{message[0]}}</p>
-      <p v-if="mes !== ''" class="report"> {{message[1]}}</p>
-      <p v-if="mes !== ''" class="report"> {{message[2]}}</p>
-      <p v-if="mes !== ''" class="report"> {{message[3]}}</p>
-      <p v-if="mes !== ''" class="report"> {{message[4]}}</p>
-      <p v-if="mes !== ''" class="report"> {{message[5]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[0]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[1]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[2]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[3]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[4]}}</p>
+      <p v-if="message !== ''" class="report"> {{message[5]}}</p>
     </div>
     
     
 
 
     <button v-if="HasThrown" @click="endTurn" class="done" align="left">Done</button>
-    <button v-if=" readyToPlay && !HasThrown && OrderOder > 8" @click="rollDice()" class="roll" align="left">Roll Dice</button>
+    <button v-if=" readyToPlay && !HasThrown && OrderOder > 8 && !gameOver" @click="rollDice()" class="roll" align="left">Roll Dice</button>
 
 
 
@@ -82,7 +82,7 @@
     </div>
 
     <!-- This is going to be a table  -->
-    <table class="itemTable" v-if=" readyToPlay && OrderOder > 8">
+    <table class="itemTable" v-if=" readyToPlay &&this.OrderOder>4">
       <tr>
         <th>Item</th>
         <th>Red</th>
@@ -534,6 +534,7 @@ export default {
       tempData: null,
 
       itemNumber: null,
+      gameOver: false,
 
 
 
@@ -750,9 +751,9 @@ export default {
         tempLists.holds[actualCount][CountForList] = true;
         tempLists.holds[actualCount][CountForList+5] = true;
         tempLists.holds[actualCount][CountForList+6] = true;
+        tempLists.holds[actualCount][CountForList+10] = true;
         tempLists.holds[actualCount][CountForList+11] = true;
-        tempLists.holds[actualCount][CountForList+12] = true;
-        tempLists.holds[actualCount][CountForList+17] = true;
+        tempLists.holds[actualCount][CountForList+15] = true;
         actualCount++
         CountForList++
       }
@@ -1252,7 +1253,6 @@ export default {
           console.log('what the hell')
       }
 
-
     },
     seven(){
       this.movingRobber = true;
@@ -1427,7 +1427,7 @@ export default {
         return
       }
       
-      if(!this.actioning &&this.OrderOder>4){
+      if(!this.actioning &&this.OrderOder>4 ){
         this.placeSpecialSettlement(num)
         return
       }
@@ -1463,6 +1463,7 @@ export default {
 
     },
     placeSpecialSettlement(num){
+      
       if(!this.settlementing){
         alert('now is not the time')
       }
@@ -1478,6 +1479,7 @@ export default {
 
     },
     SpecialItem(num){
+      
       // console.log(this.tileholds.holds)
       let CheckCount =0;
       while(CheckCount < 19){
@@ -1487,18 +1489,30 @@ export default {
 
           switch(this.currentPlayer){
             case 'red':
+              if(this.itemNumber === null){
+                break;
+              }
               this.scoreData.red[this.itemNumber]++
               break;
 
             case 'blue':
+              if(this.itemNumber === null){
+                break;
+              }
               this.scoreData.blue[this.itemNumber]++
               break;
 
             case 'green':
+              if(this.itemNumber === null){
+                break;
+              }
               this.scoreData.green[this.itemNumber]++
               break;
             
             case 'black':
+              if(this.itemNumber === null){
+                break;
+              }
               this.scoreData.black[this.itemNumber]++
               break;
           }
@@ -1524,7 +1538,7 @@ export default {
           this.itemNumber = 4
           break;
         default:
-          console.log('what the heck')
+          this.itemNumber = null;
       
       }
     },
@@ -1562,7 +1576,6 @@ export default {
           break;
       }
     },
-
     payPrice(item){
 
       switch(item){
@@ -1640,7 +1653,6 @@ export default {
 
     }
 
-
   },
   watch:{
     settlementing: function(){
@@ -1680,6 +1692,26 @@ export default {
         this.currentPlayer = 'black'
       }
     },
+    currentPlayer: function(){
+      console.log('changed')
+      if(this.scoreData.red[8]>= 10){
+        alert('Red won!')
+        this.gameOver = true
+
+      }else if(this.scoreData.blue[8]>= 20){
+        alert('blue won!')
+        this.gameOver = true
+
+      }else if(this.scoreData.green[8]>= 10){
+        alert('green won!')
+        this.gameOver = true
+
+      }else if(this.scoreData.black[8]>= 10){
+        alert('black won!')
+        this.gameOver = true
+      }
+    },
+    
     
   }
 }
@@ -1687,7 +1719,7 @@ export default {
 
 <style>
 
-.action button{
+.action button:not(.cancelAction){
   color: white !important;
   text-transform: uppercase;
   text-decoration: none;
@@ -1758,8 +1790,20 @@ export default {
 
 .cancelAction{
   left: 10px;
-  margin-top: 260px;
+  /* margin-top: 260px; */
   background: #DC143C;
+  color: white !important;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 15px;
+  border-radius: 50px;
+  display: inline-block;
+  border: none;
+  transition: all 0.4s ease 0s;
+  position: fixed;
+  padding-right: 30px;
+  padding-left: 30px;
+  margin-top: 200px;
 }
 
 
